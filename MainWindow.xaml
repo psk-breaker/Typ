@@ -1,0 +1,541 @@
+﻿<Window x:Class="Writing_App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Writing_App"
+        WindowState="Normal"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="#14191e"
+        BorderThickness="0">
+
+     <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="28" 
+                      ResizeBorderThickness="6" 
+                      CornerRadius="0"
+                      GlassFrameThickness="0"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Button Style for Add Buttons -->
+        <Style x:Key="AddButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2A2A30"/>
+                    <Setter Property="Foreground" Value="#4A90E2"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Context Menu for Novels -->
+        <ContextMenu x:Key="NovelsContextMenu">
+            <MenuItem Header="Delete" Click="DeleteContextMenu_Click" Tag="Novel"/>
+            <MenuItem Header="Copy" Click="CopyContextMenu_Click" Tag="Novel"/>
+            <MenuItem Header="Paste" Click="PasteContextMenu_Click" Tag="Novel"/>
+        </ContextMenu>
+
+        <!-- Context Menu for Sections -->
+        <ContextMenu x:Key="SectionsContextMenu">
+            <MenuItem Header="Delete" Click="DeleteContextMenu_Click" Tag="Section"/>
+            <MenuItem Header="Copy" Click="CopyContextMenu_Click" Tag="Section"/>
+            <MenuItem Header="Paste" Click="PasteContextMenu_Click" Tag="Section"/>
+        </ContextMenu>
+
+        <!-- Context Menu for Chapters -->
+        <ContextMenu x:Key="ChaptersContextMenu">
+            <MenuItem Header="Delete" Click="DeleteContextMenu_Click" Tag="Chapter"/>
+            <MenuItem Header="Copy" Click="CopyContextMenu_Click" Tag="Chapter"/>
+            <MenuItem Header="Paste" Click="PasteContextMenu_Click" Tag="Chapter"/>
+        </ContextMenu>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid">
+        <!-- 1. Maintain your exact structural Column Definitions -->
+        <Grid.ColumnDefinitions>
+            <!-- Column 0: Navigation Panels Container -->
+            <ColumnDefinition x:Name="SidebarColumn" Width="Auto"/>
+            <!-- Column 1: Settings Overlay -->
+            <ColumnDefinition x:Name="SettingsColumn" Width="130"/>
+            <!-- Column 2: Document Workspace Area -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 2. ADD Row Definitions to split the top system bar from content -->
+        <Grid.RowDefinitions>
+            <!-- Row 0: Full-Width Window Title/Drag Bar Area -->
+            <RowDefinition Height="28"/>
+            <!-- Row 1: Section Headers (+ Button & Titles) Main Workspace Content (Fills remaining height) -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Grid.ColumnSpan="3" 
+            Height="28" VerticalAlignment="Top" Panel.ZIndex="9"
+            WindowChrome.IsHitTestVisibleInChrome="True">
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Mouse.MouseEnter">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="WindowControls"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="1.0"
+                                             Duration="0:0:0.25"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+                <EventTrigger RoutedEvent="Mouse.MouseLeave">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="WindowControls"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.0"
+                                             Duration="0:0:0.5"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
+
+            <Border Background="#10000000" MouseLeftButtonDown="WindowTitleBar_MouseLeftButtonDown"/>
+
+            <StackPanel x:Name="WindowControls"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,0,4,0"
+                        Opacity="0"
+                        Panel.ZIndex="10">
+                <Button x:Name="MinimizeButton"
+                        Click="MinimizeButton_Click"
+                        Width="24"
+                        Height="24"
+                        Margin="0,0,2,0"
+                        Background="#22000000"
+                        BorderThickness="0"
+                        Foreground="White"
+                        FontSize="14"
+                        Content="━"
+                        ToolTip="Minimize"
+                        Cursor="Hand"/>
+                <Button x:Name="MaximizeButton"
+                        Click="MaximizeButton_Click"
+                        Width="24"
+                        Height="24"
+                        Margin="0,0,2,0"
+                        Background="#22000000"
+                        BorderThickness="0"
+                        Foreground="White"
+                        FontSize="12"
+                        Content="▢"
+                        ToolTip="Maximize/Restore"
+                        Cursor="Hand"/>
+                <Button x:Name="CloseButton"
+                        Click="CloseButton_Click"
+                        Width="24"
+                        Height="24"
+                        Background="#22000000"
+                        BorderThickness="0"
+                        Foreground="White"
+                        FontSize="12"
+                        Content="✕"
+                        ToolTip="Close"
+                        Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ========================================== -->
+        <!-- THREE-COLUMN SIDEBAR STRUCTURE             -->
+        <!-- ========================================== -->
+        <Grid x:Name="FilesSidebar" Grid.Row="1" Grid.Column="0" Background="#141417" Panel.ZIndex="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" /> <!-- Column 1: Novels -->
+                <ColumnDefinition Width="4" />   <!-- Splitter -->
+                <ColumnDefinition Width="220" /> <!-- Column 2: Drafts -->
+                <ColumnDefinition Width="4" />   <!-- Splitter -->
+                <ColumnDefinition Width="240" /> <!-- Column 3: Chapters & Unified Actions -->
+            </Grid.ColumnDefinitions>
+
+            <GridSplitter Grid.Column="1"
+                          Width="4"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#20FFFFFF"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          ShowsPreview="False"
+                          Cursor="SizeWE"/>
+
+            <GridSplitter Grid.Column="3"
+                          Width="4"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#20FFFFFF"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          ShowsPreview="False"
+                          Cursor="SizeWE"/>
+
+            <!-- PANEL 1: NOVELS -->
+            <Grid Grid.Column="0" Margin="0,0,1,0" Background="#141417">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <Border Grid.Row="0" Background="#141417" BorderThickness="0,0,0,1" BorderBrush="#1F242A">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" Content="+" Click="AddNovel_Click" ToolTip="Add Novel" 
+                            Width="32" Height="40" 
+                            VerticalAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            Margin="0"
+                            Style="{StaticResource AddButtonStyle}"/>
+                        <TextBlock Grid.Column="1" Text="Novels" Foreground="White" FontSize="13" FontWeight="SemiBold" 
+                            VerticalAlignment="Center" Margin="0,0,0,0" IsHitTestVisible="False"/>
+                        
+                    </Grid>
+                </Border>
+                
+                <ListBox Grid.Row="1" x:Name="NovelsListBox" DisplayMemberPath="Title" SelectionMode="Extended" SelectionChanged="NovelsListBox_SelectionChanged" MouseDoubleClick="NovelsListBox_MouseDoubleClick" ContextMenu="{StaticResource NovelsContextMenu}" Background="Transparent" BorderThickness="0" Foreground="White" Padding="5" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden"/>
+            </Grid>
+
+            <!-- PANEL 2: DRAFTS / SECTIONS -->
+            <Grid Grid.Column="2" Margin="0,0,1,0" Background="#18181C">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Background="#18181C" BorderThickness="0,0,0,1" BorderBrush="#252A30">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="+" Click="AddSection_Click" ToolTip="Add Section" Width="32" Style="{StaticResource AddButtonStyle}"/>
+                    <TextBlock Grid.Column="1" Text="Drafts" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,0" IsHitTestVisible="False"/>
+                    </Grid>
+                </Border>
+                
+                <ListBox Grid.Row="1" x:Name="SectionsListBox" DisplayMemberPath="Title" SelectionMode="Extended" SelectionChanged="SectionsListBox_SelectionChanged" MouseDoubleClick="SectionsListBox_MouseDoubleClick" ContextMenu="{StaticResource SectionsContextMenu}" Background="Transparent" BorderThickness="0" Foreground="White" Padding="5" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden"/>
+            </Grid>
+
+            <!-- PANEL 3: CHAPTERS & UNIFIED ACTION DOCK -->
+            <Grid Grid.Column="4" Background="#1C1C22">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>   <!-- Container for Dynamic Buttons -->
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Background="#1C1C22" BorderThickness="0,0,0,1" BorderBrush="#292F37">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="+" Click="AddChapter_Click" ToolTip="Add Chapter" Width="32" Style="{StaticResource AddButtonStyle}"/>
+                        <TextBlock Grid.Column="1" Text="Chapters" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,0" IsHitTestVisible="False"/>
+                    </Grid>
+                </Border>
+                
+                <Grid Grid.Row="1" x:Name="ChaptersListBoxContainer">
+                    <ListBox Grid.Row="1" x:Name="ChaptersListBox" DisplayMemberPath="Title" SelectionMode="Extended" SelectionChanged="ChaptersListBox_SelectionChanged" MouseDoubleClick="ChaptersListBox_MouseDoubleClick" PreviewMouseLeftButtonDown="ChaptersListBox_PreviewMouseLeftButtonDown" PreviewMouseMove="ChaptersListBox_PreviewMouseMove" DragOver="ChaptersListBox_DragOver" DragLeave="ChaptersListBox_DragLeave" Drop="ChaptersListBox_Drop" ContextMenu="{StaticResource ChaptersContextMenu}" AllowDrop="True" Background="Transparent" BorderThickness="0" Foreground="White" Padding="5" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden"/>
+                    
+                    <!-- Drop Indicator Bar -->
+                    <Border x:Name="DropIndicatorBar" 
+                            Height="2" 
+                            Background="#4A90E2" 
+                            Visibility="Collapsed" 
+                            VerticalAlignment="Top" 
+                            Margin="5,0,5,0"/>
+                </Grid>
+
+                <!-- UNIFIED ACTION TOOLBAR -->
+                <Grid Grid.Row="2" Background="#24242A">
+                    <Button x:Name="PromoteButton" Content="Promote 🚀" Click="PromoteButton_Click" Visibility="Collapsed" Height="32" Padding="10,0" Margin="5,0,5,0" Background="#4A90E2" Foreground="White" BorderThickness="0" HorizontalAlignment="Left"/>
+                </Grid>
+            </Grid>
+        </Grid>
+       
+        <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Panel.ZIndex="3">
+            <!-- Sidebar -->
+                <Grid
+                Name="Sidebar"
+                Width="110"
+                HorizontalAlignment="Left"
+                Background="#22000000"
+                Opacity="1"
+                IsHitTestVisible="True"
+                MouseEnter="Sidebar_MouseEnter"
+                MouseLeave="Sidebar_MouseLeave">
+
+                <StackPanel Margin="15,20,15,15" VerticalAlignment="Top">
+                    <Button x:Name="FilesToggleButton"
+                            Content="• • •"
+                            Click="FilesToggleButton_Click"
+                            Margin="0,0,0,30"
+                            Padding="0"
+                            Background="Transparent"
+                            Foreground="#a1a3a5"
+                            BorderThickness="0"
+                            FontSize="22"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#a1a3a5"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="#f3f3f3"/>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#ffffff" BlurRadius="10" ShadowDepth="0" Opacity="0.45"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Word Count -->
+                    <Button
+                        x:Name="TargetPopupButton"
+                        Content="🎯"
+                        Click="TargetPopupButton_Click"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,4"
+                        Padding="0"
+                        Width="36"
+                        Height="36"
+                        Background="Transparent"
+                        Foreground="#a1a3a5"
+                        BorderThickness="0"
+                        FontSize="30"
+                        Cursor="Hand"
+                        ToolTip="Target">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#a1a3a5"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="#f3f3f3"/>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#ffffff" BlurRadius="10" ShadowDepth="0" Opacity="0.45"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                          <Popup x:Name="TargetPopup"
+                              PlacementTarget="{Binding ElementName=TargetPopupButton}"
+                              Placement="Right"
+                              HorizontalOffset="36"
+                              VerticalOffset="0"
+                              AllowsTransparency="True"
+                              StaysOpen="True"
+                              PopupAnimation="Fade"
+                              Opened="TargetPopup_Opened"
+                              Closed="TargetPopup_Closed">
+                        <Border Background="#1B1B1F"
+                                BorderBrush="#3D3a42"
+                                BorderThickness="0"
+                                Padding="4"
+                                CornerRadius="8">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="0" Opacity="0.35"/>
+                            </Border.Effect>
+                            <TextBox
+                                Name="TargetWordBox"
+                                Text=""
+                                Width="48"
+                                FontSize="18"
+                                Background="Transparent"
+                                Foreground="#a1a3a5"
+                                BorderThickness="0"
+                                HorizontalContentAlignment="Center"/>
+                        </Border>
+                    </Popup>
+
+                    <!-- Countdown -->
+                    <Button
+                        x:Name="CountdownPopupButton"
+                        Content="⏱"
+                        Click="CountdownPopupButton_Click"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,4"
+                        Padding="0"
+                        Width="36"
+                        Height="36"
+                        Background="Transparent"
+                        Foreground="#a1a3a5"
+                        BorderThickness="0"
+                        FontSize="30"
+                        Cursor="Hand"
+                        ToolTip="Countdown">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#a1a3a5"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="#f3f3f3"/>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#ffffff" BlurRadius="10" ShadowDepth="0" Opacity="0.45"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                          <Popup x:Name="CountdownPopup"
+                              PlacementTarget="{Binding ElementName=CountdownPopupButton}"
+                              Placement="Right"
+                              HorizontalOffset="36"
+                              VerticalOffset="0"
+                              AllowsTransparency="True"
+                              StaysOpen="True"
+                              PopupAnimation="Fade"
+                              Opened="CountdownPopup_Opened"
+                              Closed="CountdownPopup_Closed">
+                        <Border Background="#1B1B1F"
+                                BorderBrush="#3D3D42"
+                                BorderThickness="0"
+                                Padding="4"
+                                CornerRadius="8">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="0" Opacity="0.35"/>
+                            </Border.Effect>
+                            <TextBox
+                                Name="MinutesBox"
+                                Text=""
+                                Width="48"
+                                FontSize="18"
+                                Background="Transparent"
+                                Foreground="#a1a3a5"
+                                BorderThickness="0"
+                                HorizontalContentAlignment="Center"/>
+                        </Border>
+                    </Popup>
+
+                    <!-- Live Stats -->
+                    <TextBlock
+                        Name="WordCountText"
+                        Text="0 / 0" 
+                        Margin="0,30,0,20"     
+                        Background="Transparent"
+                        Foreground="#a1a3a5"
+                        FontSize="22"/>
+
+                    <TextBlock
+                        Name="TimerText"
+                        Text="00:00"
+                        Margin="0,0,0,50"
+                        Background="Transparent"
+                        Foreground="#a1a3a5"
+                        FontSize="22"/>
+                    
+                    <Button x:Name="SaveButton" 
+                        Click="SaveButton_Click" 
+                        Background="Transparent" 
+                        BorderThickness="0"
+                        ToolTip="Save your progress">
+                        <Path Data="M17,3H5C3.89,3 3,3.9 3,5V19C3,20.1 3.89,21 5,21H19C20.1,21 21,20.1 21,19V7L17,3M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M15,9H5V5H15V9Z" 
+                            Fill="#a1a3a5" 
+                            Stretch="Uniform" 
+                            Width="22" Height="22"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+                <!-- external toggle removed; Files toggle lives inside the settings Sidebar -->
+ 
+
+        </Grid>    
+
+        <Grid Grid.Row="1" Grid.Column="2">
+            <Border
+                HorizontalAlignment="Center"
+                MaxWidth="896"
+                Margin="0,80,0,80"
+                Background="Transparent">
+                <RichTextBox
+                    Name="Editor"
+                    Background="#14191e"
+                    Foreground="#fbfbfb"
+                    BorderThickness="0"
+                    FontSize="20"
+                    FontFamily="Consolas"
+                    CaretBrush="White"
+                    VerticalScrollBarVisibility="Hidden"
+                    HorizontalScrollBarVisibility="Hidden"
+                    AcceptsTab="False"/>
+            </Border>
+
+            <TextBlock
+                Name="FloatingWordCountText"
+                Text="0"
+                Foreground="#6b6e71"
+                FontSize="16"
+                FontFamily="Consolas"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="-55,0,55,25"
+                IsHitTestVisible="False"/>
+        </Grid>
+
+        
+    </Grid>
+</Window>
