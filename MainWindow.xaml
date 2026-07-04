@@ -36,6 +36,52 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="PipelineSectionItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="MinHeight" Value="70"/>
+            <Setter Property="Margin" Value="8,6"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                Background="Transparent"
+                                CornerRadius="12"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
+                                              Margin="0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#4A90E2"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#30353E"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="PipelineSectionTemplate">
+            <Border Background="#252A30" CornerRadius="12" Padding="16" MinHeight="70" SnapsToDevicePixels="True">
+                <TextBlock Text="{Binding Title}"
+                           Foreground="White"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"/>
+            </Border>
+        </DataTemplate>
+
         <!-- Context Menu for Novels -->
         <ContextMenu x:Key="NovelsContextMenu">
             <MenuItem Header="Delete" Click="DeleteContextMenu_Click" Tag="Novel"/>
@@ -228,11 +274,24 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Content="+" Click="AddSection_Click" ToolTip="Add Section" Width="32" Style="{StaticResource AddButtonStyle}"/>
-                    <TextBlock Grid.Column="1" Text="Drafts" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,0" IsHitTestVisible="False"/>
+                        <TextBlock Grid.Column="1" Text="Pipeline" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,0" IsHitTestVisible="False"/>
                     </Grid>
                 </Border>
                 
-                <ListBox Grid.Row="1" x:Name="SectionsListBox" DisplayMemberPath="Title" SelectionMode="Extended" SelectionChanged="SectionsListBox_SelectionChanged" MouseDoubleClick="SectionsListBox_MouseDoubleClick" ContextMenu="{StaticResource SectionsContextMenu}" Background="Transparent" BorderThickness="0" Foreground="White" Padding="5" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden"/>
+                <ListBox Grid.Row="1"
+                         x:Name="SectionsListBox"
+                         ItemTemplate="{StaticResource PipelineSectionTemplate}"
+                         ItemContainerStyle="{StaticResource PipelineSectionItemStyle}"
+                         SelectionMode="Extended"
+                         SelectionChanged="SectionsListBox_SelectionChanged"
+                         MouseDoubleClick="SectionsListBox_MouseDoubleClick"
+                         ContextMenu="{StaticResource SectionsContextMenu}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Foreground="White"
+                         Padding="5"
+                         ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"/>
             </Grid>
 
             <!-- PANEL 3: CHAPTERS & UNIFIED ACTION DOCK -->

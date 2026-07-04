@@ -442,10 +442,8 @@ public partial class MainWindow : Window
         if (!activeSection.IsDeletionAllowed)
         {
             var result = MessageBox.Show(
-                $"Delete {selectedChapters.Count} chapter(s) from Draft 1? This will remove protected content permanently.",
-                "Confirm Delete",
-                MessageBoxButton.YesNo);
-
+                        $"Delete {selectedChapters.Count} chapter(s) from this protected section? This will remove protected content permanently."
+                        );
             if (result != MessageBoxResult.Yes)
             {
                 return;
@@ -479,7 +477,7 @@ public partial class MainWindow : Window
         if (protectedSections.Any())
         {
             var result = MessageBox.Show(
-                $"Delete {protectedSections.Count} protected Draft 1 section(s) and their chapters? This action cannot be undone.",
+                $"Delete {protectedSections.Count} protected section(s) and their chapters? This action cannot be undone.",
                 "Confirm Delete",
                 MessageBoxButton.YesNo);
 
@@ -950,14 +948,16 @@ public partial class MainWindow : Window
         // Setup default system structures matching your constraints
         Novel myNovel = new Novel { Title = "Epic Novel" };
         
-        myNovel.Sections.Add(CreateDraftSection("Draft 1", false));
-        myNovel.Sections.Add(CreateDraftSection("Draft 2", true));
-        myNovel.Sections.Add(CreateDraftSection("Draft 3", true));
+        myNovel.Sections.Add(CreateDraftSection("Notes", true));
+        myNovel.Sections.Add(CreateDraftSection("Sketch", true));
+        myNovel.Sections.Add(CreateDraftSection("Logic", true));
+        myNovel.Sections.Add(CreateDraftSection("Prose", true));
+        myNovel.Sections.Add(CreateDraftSection("Final", true));
 
-        // Generate an opening element inside Draft 1
-        myNovel.Sections[0].Chapters[0].Title = "Chapter 1";
-        myNovel.Sections[0].Chapters[0].Content = "This is a No Deletion Zone. . .";
-        myNovel.Sections[0].Chapters.Add(new Chapter { Title = "Chapter 2", Content = "Beware. . ." });
+        // Generate an opening element inside Sketch
+        myNovel.Sections[1].Chapters[0].Title = "Chapter 1";
+        myNovel.Sections[1].Chapters[0].Content = "This is a starting point for your sketch...";
+        myNovel.Sections[1].Chapters.Add(new Chapter { Title = "Chapter 2", Content = "Beware. . ." });
 
         Novels.Add(myNovel);
         NovelsListBox.ItemsSource = Novels;
@@ -1116,10 +1116,12 @@ public partial class MainWindow : Window
         string title = "New Novel " + (Novels.Count + 1);
         var newNovel = new Novel { Title = title };
         
-        // Always pre-populate standard core draft branches
-        newNovel.Sections.Add(CreateDraftSection("Draft 1", false));
-        newNovel.Sections.Add(CreateDraftSection("Draft 2", true));
-        newNovel.Sections.Add(CreateDraftSection("Draft 3", true));
+        // Always pre-populate the pipeline sections
+        newNovel.Sections.Add(CreateDraftSection("Notes", true));
+        newNovel.Sections.Add(CreateDraftSection("Sketch", true));
+        newNovel.Sections.Add(CreateDraftSection("Logic", true));
+        newNovel.Sections.Add(CreateDraftSection("Prose", true));
+        newNovel.Sections.Add(CreateDraftSection("Final", true));
         
         Novels.Add(newNovel);
         NovelsListBox.SelectedItem = newNovel;
@@ -1229,10 +1231,8 @@ public partial class MainWindow : Window
             if (!activeSection.IsDeletionAllowed)
             {
                 var result = MessageBox.Show(
-                    $"Delete '{selectedChapter.Title}' from Draft 1? This will permanently remove the chapter.",
-                    "Confirm Delete",
-                    MessageBoxButton.YesNo);
-
+                            $"Delete '{selectedChapter.Title}' from this protected section? This will permanently remove the chapter."
+                            );
                 if (result != MessageBoxResult.Yes)
                 {
                     return;
@@ -1635,12 +1635,14 @@ public partial class MainWindow : Window
     {
         Novel myNovel = new Novel { Title = "My First Novel" };
         
-        myNovel.Sections.Add(CreateDraftSection("Draft 1", false));
-        myNovel.Sections.Add(CreateDraftSection("Draft 2", true));
-        myNovel.Sections.Add(CreateDraftSection("Draft 3", true));
+        myNovel.Sections.Add(CreateDraftSection("Notes", true));
+        myNovel.Sections.Add(CreateDraftSection("Sketch", true));
+        myNovel.Sections.Add(CreateDraftSection("Logic", true));
+        myNovel.Sections.Add(CreateDraftSection("Prose", true));
+        myNovel.Sections.Add(CreateDraftSection("Final", true));
 
-        myNovel.Sections[0].Chapters[0].Title = "Chapter 1";
-        myNovel.Sections[0].Chapters[0].Content = "Welcome to your new draft...";
+        myNovel.Sections[1].Chapters[0].Title = "Chapter 1";
+        myNovel.Sections[1].Chapters[0].Content = "Welcome to your new sketch...";
 
         Novels.Add(myNovel);
         NovelsListBox.ItemsSource = Novels;
