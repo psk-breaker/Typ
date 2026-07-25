@@ -5,11 +5,7 @@ Built with C# and WPF as a native Windows desktop application.
 
 ## 🚀 Core Features
 ### 1. Uninhibited, Forward-Only Writing
-The editor employs a strict forward-only mechanic to keep you focused on generating content rather than editing it prematurely.
-
-The No-Backspace Rule: Once a word is finished (by pressing the spacebar), it is locked into history. You cannot use the backspace key, delete key, or mouse gestures to cut or modify previous work.
-
-The "Current Word" Exception: You can freely correct typos in the active word you are currently typing. Once you start a new word, the cursor locks the previous text.
+The first draft editor employs a strict forward-only mechanic to keep you focused on generating content rather than editing it prematurely.
 
 As illustrated below, the system behaves as follows:
 <img width="1410" height="812" alt="image" src="https://github.com/user-attachments/assets/3e7e0007-d627-4033-91c3-d609d0a4328d" />
@@ -36,10 +32,10 @@ Goal Setting: Set word count targets and countdown session timers to gamify and 
 Distraction-Free UI: A beautiful, dark-themed interface designed to keep your eyes relaxed and focused solely on the words.
 
 ## 📸 Screenshots
-Workspace & Organization Pipeline
+### Workspace & Organization Pipeline
 The main interface features a sleek multi-column layout separating your projects, draft stages, and live editor.
 
-The Forward-Only Ruleset
+### The Forward-Only Ruleset
 A breakdown of how the editor restricts backspacing to keep your momentum going forward.
 
 ## 🛠️ Tech Stack
@@ -58,14 +54,16 @@ Windows 10 or 11
 ## Installation / Building from Source
 Clone the repository:
 
-Bash
+``` Bash
 git clone https://github.com/psk-breaker/Typ.git
+```
 Open the solution file (Writing_App.sln) in Visual Studio.
 
 Build and run the project using the Release configuration, using:
-Bash
+```Bash
 dotnet build
 dotnet run
+```
 
 ## 🤝 Contributing
 This is an open-source project! If you want to propose new features for the draft pipeline, optimize the text-locking engine, or fix bugs, feel free to fork the repository and open a Pull Request.
