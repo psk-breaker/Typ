@@ -10,6 +10,8 @@ The first draft editor employs a strict forward-only mechanic to keep you focuse
 As illustrated below, the system behaves as follows:
 <img width="1410" height="812" alt="image" src="https://github.com/user-attachments/assets/3e7e0007-d627-4033-91c3-d609d0a4328d" />
 
+<img width="774" height="598" alt="20260806-2032-42 0970652" src="https://github.com/user-attachments/assets/3a1852d2-1c8a-4516-a6dc-b4cc0b353cbf" />
+
 
 Deleteable1 -> The current word can be modified or deleted.
 
